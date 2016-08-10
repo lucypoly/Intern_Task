@@ -1,0 +1,39 @@
+body {
+  font-size: 12pt;
+  color: grey;
+}
+
+ul {
+  list-style: none;
+  padding-left: 10px;
+  border-left: solid #b0b0b0 1px;
+  display: flex;
+  flex-direction: column;
+}
+
+ul#mainUl {
+  border-left: none;
+}
+
+li {
+  margin: 0;
+  padding: 5px 5px 5px 20px;
+  background: no-repeat;
+  background-position-x: 0;
+  background-position-y: 8px;
+  cursor: pointer;
+}
+
+button {
+  margin-left: 5px;
+  background-color: white;
+  //border: #b0b0b0 1px solid;
+  border: none;
+  padding: 2px 4px 2px 4px;
+}
+
+
+
+
+
+
