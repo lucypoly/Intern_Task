@@ -1,4 +1,4 @@
-(function () {
+(function fileExplorer() {
     var mainFolder;
     var files;
 
@@ -7,19 +7,88 @@
     };
 
 
-    // function CreateDomElement () {
-    //     this
-    // }
-    //
-    // CreateDomElement.prototype.createFile = function () {
-    //
-    // }
-    //
-    //
-    //
-    // var init = new CreateDomElement();
-    //
-    // init.start();
+    function CreateDomElement(type, name, parentPath) {
+        this.type = type;
+        this.name = name;
+        this.parentPath = parentPath;
+        if (this.type === 'folder') {
+            this.children = [];
+        }
+        this.addDomElement = function () {
+            var parentNode, childNode, span;
+
+            parentNode = document.getElementById(this.parentPath).lastChild;
+            childNode = document.createElement('li');
+            childNode.id = this.parentPath + '/' + this.name;
+
+            parentNode.appendChild(childNode);
+
+            span = document.createElement('span');
+            childNode.appendChild(span);
+            span.innerHTML = name;
+
+            span.addEventListener('click', function () {
+
+                this.parentNode.children[4].style.display = (this.parentNode.children[4].style.display == 'none') ? 'block' : 'none';
+            });
+
+            if (this.type === 'folder') {
+                childNode.className = 'folder';
+
+                childNode.style.backgroundImage = 'url("' + 'images/Folder-icon.png' + '")';
+                childNode.style.backgroundSize = '14px';
+
+                addButton('images/delete.png', childNode, 'del' + childNode.id);
+                deleteDomElementBehaviour('del' + childNode.id);
+
+                addButton('images/folder.png', childNode, 'fol' + childNode.id);
+
+                addButton('images/file.png', childNode, 'file' + childNode.id);
+
+
+            } else if(this.type === 'file') {
+                childNode.className = 'file';
+
+                childNode.style.backgroundImage = 'url("' + 'images/File-icon.png' + '")';
+                childNode.style.backgroundSize = '14px';
+
+                addButton('images/delete.png', childNode, 'del' + childNode.id);
+            }
+        };
+
+    }
+
+    function addButton(imgSrc, childNode, id) {
+        var element, img;
+        element = document.createElement('button');
+        element.id = id;
+
+        img = element.appendChild(document.createElement('img'));
+        img.src = imgSrc;
+        img.style.width = '13px';
+
+        childNode.insertBefore(element, childNode.children[1]);
+    }
+
+    function deleteDomElementBehaviour(buttonId){
+        var button = document.getElementById(buttonId);
+        button.addEventListener('click', function () {
+
+            var elementToDelete = this.parentNode;
+            var parent = elementToDelete.parentNode;
+            parent.removeChild(elementToDelete);
+        });
+    }
+
+    function createDomElementBehaviour(buttonId, createFunc) {
+        var button = document.getElementById(buttonId);
+        button.addEventListener('click', function () {
+            createFunc();
+        });
+
+    }
+
+    
 
 
     /**
@@ -64,6 +133,7 @@
     function createTree(container, obj) {
         container.appendChild(createTreeDom(obj));
     }
+
 
     function createRootElement() {
         var span, mainUl;
@@ -112,10 +182,10 @@
 
 
     function createNavigation() {
-        addElementToNavigation('button', 'folder', 'images/delete.png', 'del', 'delete');
-        addElementToNavigation('button', 'folder', 'images/folder.png', 'fol', 'newFolder');
-        addElementToNavigation('button', 'folder', 'images/file.png', 'file', 'newFile');
-        addElementToNavigation('button', 'file', 'images/delete.png', 'del', 'delete');
+        addElementToNavigation('folder', 'images/delete.png', 'del', 'delete');
+        addElementToNavigation('folder', 'images/folder.png', 'fol', 'newFolder');
+        addElementToNavigation('folder', 'images/file.png', 'file', 'newFile');
+        addElementToNavigation('file', 'images/delete.png', 'del', 'delete');
     }
 
     function createIcons() {
@@ -143,7 +213,7 @@
     function addIconToElement(imgUrl, className) {
         var array = document.getElementsByClassName(className);
         [].forEach.call(array, function addBackgroundFile(item) {
-            
+
             item.style.backgroundImage = 'url("' + imgUrl + '")';
             item.style.backgroundSize = '14px';
         });
@@ -156,13 +226,13 @@
      * @param id - add id to this element
      * @param newClass - add class to this element
      */
-    function addElementToNavigation(tag, parentClass, src, id, newClass) {
+    function addElementToNavigation(parentClass, src, id, newClass) {
         var allParents, element, img, i;
 
         allParents = document.getElementsByClassName(parentClass);
         for (i = 0; i < allParents.length; i++) {
 
-            element = document.createElement(tag);
+            element = document.createElement('button');
             element.id = id + allParents[i].id;
             element.className = newClass;
 
@@ -181,9 +251,9 @@
         var spans, i;
         spans = document.getElementsByTagName('span');
         for (i = 0; i < spans.length; i++) {
-            
+
             spans[i].addEventListener('click', function () {
-                
+
                 this.parentNode.children[4].style.display = (this.parentNode.children[4].style.display == 'none') ? 'block' : 'none';
             })
         }
@@ -194,19 +264,19 @@
 
         behaviourButtons = document.getElementsByClassName(buttonClass);
         for (i = 0; i < behaviourButtons.length; i++) {
-            
+
             behaviourButtons[i].addEventListener('click', function () {
-                
+
                 elementPath = this.parentNode.id;
                 functionCreate(files, elementPath);
 
-                explorer = document.getElementById('explorer');
+                // explorer = document.getElementById('explorer');
+                //
+                // while (explorer.firstChild) {
+                //     explorer.removeChild(explorer.firstChild);
+                // }
 
-                while (explorer.firstChild) {
-                    explorer.removeChild(explorer.firstChild);
-                }
-
-                startWorking(files);
+                // startWorking(files);
             })
         }
     }
@@ -229,6 +299,7 @@
             }
             return obj;
         }
+
     }
 
     /**
@@ -245,12 +316,17 @@
      * create Folder in specified path
      */
     function createFolderByPath(obj, pathToFind) {
-        var nameOfFolder, folder, i;
+        var nameOfFolder, folder, i, myElement;
 
         if (obj.path == pathToFind) {
 
             nameOfFolder = prompt('Enter name of folder', '');
-            if (nameOfFolder === null) {return;}
+            if (nameOfFolder === null) {
+                return;
+            }
+
+            myElement = new CreateDomElement('folder', nameOfFolder, pathToFind);
+            myElement.addDomElement();
 
             folder = new ObjectFolder('folder', nameOfFolder, obj.path + '/' + nameOfFolder, []);
             obj.children.push(folder);
@@ -262,14 +338,21 @@
                 if (obj.children[i].path == pathToFind) {
 
                     nameOfFolder = prompt('Enter name of folder', '');
-                    if (nameOfFolder === null) {return;}
+                    if (nameOfFolder === null) {
+                        return;
+                    }
+
+                    myElement = new CreateDomElement('folder', nameOfFolder, pathToFind);
+                    myElement.addDomElement();
 
                     folder = new ObjectFolder('folder', nameOfFolder, obj.children[i].path + '/' + nameOfFolder, []);
                     obj.children[i].children.push(folder);
+
                 } else  createFolderByPath(obj.children[i], pathToFind);
             }
             return obj;
         }
+
     }
 
     /**
@@ -286,12 +369,17 @@
      *  create File in specified path
      */
     function createFileByPath(obj, pathToFind) {
-        var nameOfFile, file, i;
+        var nameOfFile, file, i, myElement;
 
         if (obj.path == pathToFind) {
 
             nameOfFile = prompt('Enter name of file', '');
-            if (nameOfFile === null) {return;}
+            if (nameOfFile === null) {
+                return;
+            }
+
+            myElement = new CreateDomElement('file', nameOfFile, pathToFind);
+            myElement.addDomElement();
 
             file = new ObjectFile('file', nameOfFile, obj.path + '/' + nameOfFile);
             obj.children.push(file);
@@ -302,7 +390,12 @@
                 if (obj.children[i].path == pathToFind) {
 
                     nameOfFile = prompt('Enter name of file', '');
-                    if (nameOfFile === null) {return;}
+                    if (nameOfFile === null) {
+                        return;
+                    }
+
+                    myElement = new CreateDomElement('file', nameOfFile, pathToFind);
+                    myElement.addDomElement();
 
                     file = new ObjectFile('file', nameOfFile, obj.children[i].path + '/' + nameOfFile);
                     obj.children[i].children.push(file);
